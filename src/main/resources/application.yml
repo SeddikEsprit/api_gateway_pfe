@@ -1,0 +1,39 @@
+eureka:
+  client:
+    serviceUrl:
+      #defaultZone: http://eureka-server-prod:8761/eureka
+      defaultZone: http://localhost:8761/eureka
+server:
+  port: 8080
+spring:
+  application:
+    name: api_gateway
+  cloud:
+    gateway:
+      routes:
+        -   filters:
+              - AuthenticationFilter
+            id: history_service
+            predicates:
+              - Path=/history/**
+            #uri: http://api-history-prod:5000
+            uri: http://localhost:5000
+        -   id: user_service
+            predicates:
+              - Path=/user/**
+            #uri: http://user-prod:8070
+            uri: http://localhost:8070
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedHeaders: "*"
+            allowed-origin-patterns: "*"
+            allowedMethods:
+              - "POST"
+              - "GET"
+              - "OPTIONS"
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Methods Access-Control-Allow-Headers Access-Control-Allow-Credentials Access-Control-Max-Age Access-Control-Expose-Headers Access-Control-Request-Method Access-Control-Request-Headers Origin Accept Content-Type X-Requested-With Authorization X-Auth-Token X-Request-ID X-Correlation-ID X-Access-Token
+

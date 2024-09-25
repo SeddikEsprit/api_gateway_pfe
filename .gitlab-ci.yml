@@ -1,0 +1,37 @@
+stages:
+  - build
+  #  - test
+  - AzureConnect
+  - ACRPush
+
+variables:
+  #  NEXUS_DOCKER_REPO: $NEXUS_DOCKER_REPO
+  #  SONAR_HOST_URL: $SONAR_HOST_URL
+  #  SONAR_LOGIN: $SONAR_LOGIN
+  AZ_PASSWORD: $AZ_PASSWORD
+  AZ_USERNAME: $AZ_USERNAME
+
+#before_script:
+#  - echo $NEXUS_PASSWORD | docker login -u admin --password-stdin 192.168.206.128:8082
+build_api_gateway:
+  stage: build
+  script:
+    - mvn clean install -Dmaven.test.skip package
+    #    - docker build -t $NEXUS_DOCKER_REPO/api_gateway:$CI_COMMIT_SHA .
+    #    - docker push $NEXUS_DOCKER_REPO/api_gateway:$CI_COMMIT_SHA
+    - docker build -t seddkpfe.azurecr.io/api-gateway-prod:$CI_COMMIT_SHA .
+Azure_connection:
+  stage: AzureConnect
+  script:
+    - az login --user $AZ_USERNAME --password $AZ_PASSWORD
+    - az acr login --name seddkPfe
+push_to_ACR:
+  stage: ACRPush
+  script:
+    - docker push seddkpfe.azurecr.io/api-gateway-prod:$CI_COMMIT_SHA
+#test_api_gateway:
+#  stage: test
+#  script:
+#    - cd /home/gitlab-runner/builds/41yVAjAUx/0/root/api_gateway
+#    - mvn clean install
+#    - mvn sonar:sonar -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_LOGIN
